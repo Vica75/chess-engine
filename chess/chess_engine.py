@@ -86,6 +86,14 @@ class Move:
         self.piece_moved = board[self.start_row][self.start_col]
         self.piece_captured = board[self.end_row][self.end_col]
 
+        # creating a unique moveID - allow us to compare 2 moves easily
+        # if the ids are the same - the moves have the same start and end
+        # they are effectively the same move - given the state of the board
+        self.moveID = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
+
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            return other.moveID == self.moveID
 
     def get_chess_notation(self):
         start = self.cols_to_files[self.start_col] + self.rows_to_ranks[self.start_row]
