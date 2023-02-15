@@ -57,6 +57,10 @@ def main():
     load_images()
 
     selected_square = ()
+    valid_moves = game_state.get_legal_moves()
+    valid_moves = [chess_engine.Move((1, 0), (2, 0), game_state.board)]
+    move_made = False
+
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -76,18 +80,25 @@ def main():
                 else:
                     destination_square = (row, col)
                     move = chess_engine.Move(selected_square, destination_square, game_state.board)
-                    game_state.make_move(move)
-                    print(move.get_chess_notation())
-                    selected_square = ()
+                    if move in valid_moves:
+                        game_state.make_move(move)
+                        print(move.get_chess_notation())
+                        selected_square = ()
+                        move_made = True
             # key handler
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_u:
                     game_state.undo_move()
+                    move_made = True
+
+        # we want to generate new moves only when a new move was made
+        # otherwise the legal moves stay the same
+        if move_made:
+            valid_moves = game_state.get_legal_moves()
 
         draw_gamestate(window, game_state)
         clock.tick(MAX_FPS)
         pygame.display.flip()
-
 
 
 if __name__ == "__main__":
