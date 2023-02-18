@@ -17,6 +17,8 @@ class GameState:
         ]
         self.white_to_move = True
         self.move_log = []
+        self.move_functions = {"P": self.get_pawn_moves, "R": self.get_rook_moves, "N": self.get_knight_moves,
+                               "B": self.get_bishop_moves, "Q": self.get_queen_moves, "K": self.get_king_moves}
 
     def make_move(self, move):
         self.board[move.start_row][move.start_col] = "--"
@@ -43,18 +45,10 @@ class GameState:
             for col in range(len(self.board[row])):
                 if ((self.board[row][col][0] == "w" and self.white_to_move) or
                         (self.board[row][col][0] == "b" and not self.white_to_move)):
-                    if self.board[row][col][1] == "P":
-                        moves.extend(self.get_pawn_moves(row, col))
-                    # elif self.board[row][col][1] == "R":
-                    #     moves.extend(self.get_rook_moves(row, col))
-                    # elif self.board[row][col][1] == "N":
-                    #     moves.extend(self.get_knight_moves(row, col))
-                    # elif self.board[row][col][1] == "B":
-                    #     moves.extend(self.get_bishop_moves(row, col))
-                    # elif self.board[row][col][1] == "K":
-                    #     moves.extend(self.get_king_moves(row, col))
-                    # elif self.board[row][col][1] == "Q":
-                    #     moves.extend(self.get_queen_moves(row, col))
+                    piece = self.board[row][col][1]
+                    if piece == "P":  # only for testing the dictionary as the other functions are yet to be implemented
+                        moves.extend(self.move_functions["P"](row, col))
+
         return moves
 
     # move handler - the methods take position and return the list of possible moves for a given type of piece
@@ -88,13 +82,13 @@ class GameState:
                     moves.append(Move((r, c), (r + 2, c), self.board))
             # now, let's check if the pawn can attack
             # left attack - from white's perspective
-            if self.board[r + 1][c - 1] != "--" and c != 0:
+            if c != 0 and self.board[r + 1][c - 1] != "--":
                 move = Move((r, c), (r + 1, c - 1), self.board)
                 if move.piece_captured[0] == "w":
                     moves.append(move)
             # right attack - from white's perspective
-            if self.board[r + 1][c + 1] != "--" and c != 7:
-                move = Move((r, c), (r - 1, c + 1), self.board)
+            if c != 7 and self.board[r + 1][c + 1] != "--":
+                move = Move((r, c), (r + 1, c + 1), self.board)
                 if move.piece_captured[0] == "w":
                     moves.append(move)
         return moves
