@@ -26,9 +26,12 @@ def load_images():
 
 
 # This function is used to draw, the board, pieces, move suggestions, highlighting, etc,
-def draw_gamestate(screen, gs):
+def draw_gamestate(screen, gs, legal_moves, selected_square):
     draw_board(screen)
     draw_pieces(screen, gs)
+    if selected_square:
+        draw_selected(screen, selected_square)
+    # draw_legal_moves(screen, legal_moves)
 
 
 def draw_board(screen):
@@ -49,6 +52,20 @@ def draw_pieces(screen, gs):
                 screen.blit(piece_img, (col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
+def draw_legal_moves(screen, legal_moves):
+    sq_width = sq_height = 10
+    for move in legal_moves:
+        x = move.end_col * SQ_SIZE + SQ_SIZE/2 - 5
+        y = move.end_row * SQ_SIZE + SQ_SIZE / 2 - 5
+        pygame.draw.rect(screen, DARK_BLUE, (x, y, sq_width, sq_height))
+
+
+def draw_selected(screen, pos):
+    x = pos[1] * SQ_SIZE
+    y = pos[0] * SQ_SIZE
+    pygame.draw.rect(screen, DARK_BLUE, (x, y, SQ_SIZE, SQ_SIZE), 3)
+
+
 def main():
     window = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Chess Game!")
@@ -58,7 +75,7 @@ def main():
 
     selected_square = ()
     valid_moves = game_state.get_legal_moves()
-    valid_moves = [chess_engine.Move((1, 0), (2, 0), game_state.board)]
+    # valid_moves = [chess_engine.Move((1, 0), (2, 0), game_state.board)]  # test code
     move_made = False
 
     clock = pygame.time.Clock()
@@ -74,10 +91,13 @@ def main():
                 col = location[0] // SQ_SIZE
                 # if the user didn't choose the piece to move yet, we select the current piece
                 # if a piece was already selected, we make a move and clear the selected_square tuple
-                if selected_square == ():
-                    if game_state.board[row][col] != "--":
-                        selected_square = (row, col)
-                else:
+                # we only allow to choose a black piece if it's black's move, the same with white
+                if (not selected_square and game_state.board[row][col] != "--" and
+                        (game_state.white_to_move and game_state.board[row][col][0] == "w" or
+                         not game_state.white_to_move and game_state.board[row][col][0] == "b")):
+                    selected_square = (row, col)
+                    print(selected_square)
+                elif selected_square:
                     destination_square = (row, col)
                     move = chess_engine.Move(selected_square, destination_square, game_state.board)
                     if move in valid_moves:
@@ -85,6 +105,9 @@ def main():
                         print(move.get_chess_notation())
                         selected_square = ()
                         move_made = True
+                    else:
+                        selected_square = ()
+
             # key handler
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_u:
@@ -96,7 +119,8 @@ def main():
         if move_made:
             valid_moves = game_state.get_legal_moves()
 
-        draw_gamestate(window, game_state)
+        draw_gamestate(window, game_state, valid_moves, selected_square)
+
         clock.tick(MAX_FPS)
         pygame.display.flip()
 

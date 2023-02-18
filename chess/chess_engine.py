@@ -1,12 +1,17 @@
 class GameState:
     def __init__(self):
+
+        # The representation of the board
+        # -- means that the square is empty, b means black, w means white
+        # The uppercase letters symbolise different types of pieces
+        # e.g. "wB" symbolises a white bishop
         self.board = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "bP", "--", "--"],
             ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]
         ]
@@ -39,21 +44,60 @@ class GameState:
                 if ((self.board[row][col][0] == "w" and self.white_to_move) or
                         (self.board[row][col][0] == "b" and not self.white_to_move)):
                     if self.board[row][col][1] == "P":
-                        moves.append(self.get_pawn_moves)
-                    elif self.board[row][col][1] == "R":
-                        moves.append(self.get_rook_moves)
-                    elif self.board[row][col][1] == "N":
-                        moves.append(self.get_knight_moves)
-                    elif self.board[row][col][1] == "B":
-                        moves.append(self.get_bishop_moves)
-                    elif self.board[row][col][1] == "K":
-                        moves.append(self.get_king_moves)
-                    elif self.board[row][col][1] == "Q":
-                        moves.append(self.get_queen_moves)
+                        moves.extend(self.get_pawn_moves(row, col))
+                    # elif self.board[row][col][1] == "R":
+                    #     moves.extend(self.get_rook_moves(row, col))
+                    # elif self.board[row][col][1] == "N":
+                    #     moves.extend(self.get_knight_moves(row, col))
+                    # elif self.board[row][col][1] == "B":
+                    #     moves.extend(self.get_bishop_moves(row, col))
+                    # elif self.board[row][col][1] == "K":
+                    #     moves.extend(self.get_king_moves(row, col))
+                    # elif self.board[row][col][1] == "Q":
+                    #     moves.extend(self.get_queen_moves(row, col))
+        return moves
 
     # move handler - the methods take position and return the list of possible moves for a given type of piece
     def get_pawn_moves(self, r, c):
-        pass
+        moves = []
+        # find white's moves
+        if self.white_to_move:
+            if self.board[r-1][c] == "--":
+                moves.append(Move((r, c), (r-1, c), self.board))
+                # if it's white and on row 6 it means that the pawn hasn't been moved yet,
+                # so we check if the square 2 rows further is empty
+                if r == 6 and self.board[r-2][c] == "--":
+                    moves.append(Move((r, c), (r-2, c), self.board))
+            # now, let's check if the pawn can attack
+            # left attack
+            if c != 0 and self.board[r-1][c-1] != "--":
+                move = Move((r, c), (r-1, c-1), self.board)
+                if move.piece_captured[0] == "b":
+                    moves.append(move)
+            if c != 7 and self.board[r-1][c+1] != "--":
+                move = Move((r, c), (r-1, c+1), self.board)
+                if move.piece_captured[0] == "b":
+                    moves.append(move)
+        # find black's moves
+        else:
+            if self.board[r + 1][c] == "--":
+                moves.append(Move((r, c), (r + 1, c), self.board))
+                # if it's white and on row 6 it means that the pawn hasn't been moved yet,
+                # so we check if the square 2 rows further is empty
+                if r == 1 and self.board[r + 2][c] == "--":
+                    moves.append(Move((r, c), (r + 2, c), self.board))
+            # now, let's check if the pawn can attack
+            # left attack - from white's perspective
+            if self.board[r + 1][c - 1] != "--" and c != 0:
+                move = Move((r, c), (r + 1, c - 1), self.board)
+                if move.piece_captured[0] == "w":
+                    moves.append(move)
+            # right attack - from white's perspective
+            if self.board[r + 1][c + 1] != "--" and c != 7:
+                move = Move((r, c), (r - 1, c + 1), self.board)
+                if move.piece_captured[0] == "w":
+                    moves.append(move)
+        return moves
 
     def get_rook_moves(self, r, c):
         pass
